@@ -15,6 +15,15 @@ defmodule LiveTeaWeb.Router do
     plug :accepts, ["json"]
   end
 
+
+  import Phoenix.LiveDashboard.Router
+
+    scope "/" do
+      pipe_through :browser
+      live_dashboard "/dashboard", metrics: LiveTeaWeb.Telemetry
+  end
+
+
   scope "/", LiveTeaWeb do
     pipe_through :browser
 
@@ -33,14 +42,6 @@ defmodule LiveTeaWeb.Router do
   # If your application does not have an admins-only section yet,
   # you can use Plug.BasicAuth to set up some basic authentication
   # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :test] do
-    import Phoenix.LiveDashboard.Router
-
-    scope "/" do
-      pipe_through :browser
-      live_dashboard "/dashboard", metrics: LiveTeaWeb.Telemetry
-    end
-  end
 
 
   def set_username(conn, _opts) do
