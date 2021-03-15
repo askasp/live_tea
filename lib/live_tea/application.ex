@@ -3,7 +3,6 @@ defmodule LiveTea.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  use Application
 
   def start(_type, _args) do
     children = [
@@ -12,7 +11,12 @@ defmodule LiveTea.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: LiveTea.PubSub},
       # Start the Endpoint (http/https)
-      LiveTeaWeb.Endpoint
+      LiveTeaWeb.Endpoint,
+      LiveTea.App,
+      ChatMessagesHandler
+
+
+
       # Start a worker by calling: LiveTea.Worker.start_link(arg)
       # {LiveTea.Worker, arg}
     ]
