@@ -81,11 +81,11 @@ def home_page(assigns) do
     <h1 class="text-yellow-500 text-1xl "> Your name: <%= @name %> </h1>
     </header>
 
-    <div class=" mt-24" phx-hook="Scroll" id="messages" style="white-space: pre-line">
+    <div class=" mt-24" phx-hook="Scroll" id="messages">
         <%= for msg <-  @messages do %>
-            <div class="bg-gray-800 rounded p-2 text-gray-300 mb-4">
-                <h2 class="font-bold" > <%= msg.sender %> </h2>
-                    <%= msg.content %>
+            <div class="bg-gray-800 rounded p-2 text-gray-300 mb-4 mt-0" >
+                <h2 class="font-bold " > <%= msg.sender %> </h2>
+                    <div style="white-space: pre-line" > <%= msg.content %> </div>
             </div>
         <% end %>
     </div>
