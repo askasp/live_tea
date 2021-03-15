@@ -12,7 +12,7 @@ use Mix.Config
 config :live_tea, LiveTeaWeb.Endpoint,
   url: [host: "do.stadler.no", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json",
-  check_origin: ["//do.stadler.no", "stadler.no"]
+  check_origin: ["//do.stadler.no", "//livechat.stadler.no"]
 
 # Do not print debug messages in production
 config :logger, level: :info
