@@ -64,7 +64,7 @@ def home_page(assigns) do
  <form phx-submit="enter_chat" class=" px-8 pt-6 pb-8 mt-24 text-center">
     <div class="mb-4 text-gray-200">
       <input class="text-gray-100 bg-gray-800 shadow appearance-none text-center rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" name="chat_id" id="chat_id" type="text" placeholder="Chat id">
-        <button class="bg-yellow-500 text-gray-700 p-3 mt-6 rounded" pe="submit" phx-disable-with="Searching...">Start chatting </button>
+        <button class="bg-yellow-500 text-gray-900 p-3 mt-6 rounded" pe="submit" phx-disable-with="Searching...">Start chatting </button>
     </div>
 
     </form>
