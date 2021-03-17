@@ -17,7 +17,7 @@ defmodule LiveTeaWeb.PageLive do
           [] -> {:noreply, assign(socket, page: :home)}
           [chat_id] -> Phoenix.PubSub.subscribe(LiveTea.PubSub, "chat:"<>chat_id)
 
-                       messages = ChatMessagesHandler.get(chat_id)
+                       messages = ChatReadModel.get(chat_id)
                        {:noreply, assign(socket, page: :chat, chat_id: chat_id, messages: messages)}
       end
   end

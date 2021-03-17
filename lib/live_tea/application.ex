@@ -13,7 +13,7 @@ defmodule LiveTea.Application do
       # Start the Endpoint (http/https)
       LiveTeaWeb.Endpoint,
       LiveTea.App,
-      ChatMessagesHandler
+      ChatReadModel
 
 
 

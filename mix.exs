@@ -43,6 +43,8 @@ defmodule LiveTea.MixProject do
       {:telemetry_poller, "~> 0.4"},
       {:gettext, "~> 0.11"},
     {:commanded, "~> 1.2"},
+
+{:memento, "~> 0.3.1"},
     {:ets, "~> 0.8.1"},
 
   {:commanded_extreme_adapter, "~> 1.1"},
