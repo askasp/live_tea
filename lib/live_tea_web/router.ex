@@ -23,7 +23,6 @@ defmodule LiveTeaWeb.Router do
       live_dashboard "/dashboard", metrics: LiveTeaWeb.Telemetry
   end
 
-
   scope "/", LiveTeaWeb do
     pipe_through :browser
 
