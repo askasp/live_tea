@@ -79,6 +79,7 @@ def home_page(assigns) do
       <header class="fixed w-full left-0 top-0  bg-gray-900 mt-0 p-4 pb-2">
     <h1 class="text-yellow-500 text-1xl mb-0 "> Chat id: <%= @chat_id %> </h1>
     <h1 class="text-yellow-500 text-1xl "> Your name: <%= @name %> </h1>
+    <hr style="opacity: 0.2">
     </header>
 
     <div class=" mt-24" phx-hook="Scroll" id="messages">
@@ -89,11 +90,11 @@ def home_page(assigns) do
             </div>
         <% end %>
     </div>
-    <hr>
+    <hr style="opacity: 0.2">
 
-      <form class="mt-8 w-full flex justify-between mb-24 "  phx-submit="send_message">
-        <textarea id="textarea" class="w-4/5 text-gray-300 bg-gray-800 rounded p-2 " type="text" name="message" placeholder="message; Shift-Enter for a newline " autocomplete="off"></textarea>
-        <button class="rounded bg-yellow-500 text-gray-900 p-2" type="submit" phx-disable-with="Searching...">Send </button>
+      <form class="mt-8 w-full flex justify-between mb-24 align-bottom " style="align-items: center" phx-submit="send_message">
+        <textarea id="textarea" class="w-3/4 text-gray-300 bg-gray-800 rounded p-2 " type="text" name="message" placeholder="message; Shift-Enter for a newline " autocomplete="off"></textarea>
+        <button class="h-8 align-bottom rounded bg-yellow-500 text-gray-900 px-4 " type="submit" phx-disable-with="Sending...">Send </button>
       </form>
       </div>
 
