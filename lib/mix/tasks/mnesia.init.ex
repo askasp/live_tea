@@ -7,8 +7,7 @@ defmodule Mix.Tasks.Mnesia.Init do
         Memento.stop
         Memento.Schema.create(nodes)
         Memento.start
-        a = Memento.Table.create(ChatReadModel.Model, disc_copies: nodes)
-        IO.inspect(a)
+        Memento.Table.create(ChatReadModel.Model, disc_copies: nodes)
     end
 
 end

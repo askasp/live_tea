@@ -1,6 +1,11 @@
 # LiveTea
 
-To start your Phoenix server:
+## To start eventstore 
+docker run -d -p 2113:2113 -p 1113:1113     eventstore/eventstore:latest --insecure --run-projections=All     --enable-external-tcp --enable-atom-pub-over-http --start-standard-projections=true
+
+
+
+## To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`
   * Install Node.js dependencies with `npm install` inside the `assets` directory
