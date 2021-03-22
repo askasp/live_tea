@@ -7,6 +7,7 @@ According to https://mcfunley.com/choose-boring-technology you have a quota on h
 This demo has as much respect for quotas as a russian fishing vessel, and have nothing but non-boring tech.
 Naturally, this can make the point of this blag a bit hard to grasp, so to be precise.
 
+
 My main goal is to:
 * Show how phoenix liveview (LV) and CQRS can work together to make fast (really fast), and robust applications.
 * Inspire people to see the possibilities of "server-side-rendering"[^1] with websockets
@@ -45,7 +46,7 @@ A chat room web app using CQRS and extremly little javascript
 ### DDD  (Domain driven design)
 Domain driven design is about having the code reflect the language you use at work.
 
-The idea is that developers and product/sale people can speak the same language. #halleluja
+The idea is that developers and product/sale people can speak the same language. #halleluja.
 This, naturallly, won't work. Tribe language, has been around forever, and DDD won't change that. But, admidettly, its easier to say SendMessage and refer to the message sending function , than the MessageSendingFactoryClassInterfaceImpl.
 
 When doing DDD get a bunch og devs and domain experts in a room and define all the business events. 
