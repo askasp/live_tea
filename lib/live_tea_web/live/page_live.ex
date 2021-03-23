@@ -43,8 +43,8 @@ defmodule LiveTeaWeb.PageLive do
 
 
   @impl true
-  def handle_info(%MessageSent{} = event, socket) do
-      new_sock =assign(socket, messages: socket.assigns[:messages] ++ [event]  )
+  def handle_info(messages, socket) do
+      new_sock =assign(socket, messages: messages)
       {:noreply, push_event(new_sock, "new_message", %{})}
   end
 

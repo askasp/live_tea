@@ -18,9 +18,9 @@ defmodule ChatReadModel do
       end
 
       def handle(%MessageSent{} = event, _metadata) do
-          :ok = Phoenix.PubSub.broadcast(LiveTea.PubSub, "chat:"<>event.chat_id, event)
+#x         :ok = Phoenix.PubSub.broadcast(LiveTea.PubSub, "chat:"<> event.chat_id, event)
           Memento.transaction! fn -> Memento.Query.write(%Model{chat_id: event.chat_id, sender: event.sender,content: event.content}) end
-          :ok
+          Phoenix.PubSub.broadcast(LiveTea.PubSub, "chat:"<> event.chat_id, get(event.chat_id))
       end
 
       def get(chat_id) do
