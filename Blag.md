@@ -1,12 +1,10 @@
-
 # Live Tea - Making a CQRS/DDD/Liveview/Elm-architecture chat app
 
 I considered adding AI to the title to buzz even more, but I refrained.
 
 According to https://mcfunley.com/choose-boring-technology you have a quota on how many new things you can try at once in a project. 
-This demo has as much respect for quotas as a russian fishing vessel, and have nothing but non-boring tech.
+This demo has as much respect for quotas as a russian fishing vessel, and has nothing but non-boring tech.
 Naturally, this can make the point of this blag a bit hard to grasp, so to be precise.
-
 
 My main goal is to:
 * Show how phoenix liveview (LV) and CQRS can work together to make fast (really fast), and robust applications.
@@ -19,15 +17,19 @@ Super opinionated stuff that I wanted to test, but are not essential. They might
 When I write actor, I mean an elixir process, which is not the same as a unix process (more lightweight). You could easily have millions of actors on your computer. 
 
 
-### What I have made
-A chat room web app using CQRS and extremly little javascript
+## What I have made
+A chat room web app using CQRS and no custom javascript
+
+
 [LiveDemo](http://livechat.stadler.no "LiveTea")
 
 [Code](https://github.com/askasp/live_tea)
 
-### How it works
+## How it works
+
 
 ![](https://i.imgur.com/NWaNe3l.png)
+
 
 1. A browser goes to livechat.stadler.no/some_id and gets html and JS
 2. A WS is set up between client and the backend (handled by LV)
@@ -36,7 +38,7 @@ A chat room web app using CQRS and extremly little javascript
 5. A SendMessage Command is sent via WS, dispatched to an aggregate.
 6. MessageSent event is written to EventStore
 7. An actor subscribing go ES gets the MessageSent event and applies it to the chat state
-8. The updated chat is broadcasted to all actors subscribing to "chat:some_id".
+8. The updated chat is broadcasted
 9. The html is updated and the diff is sent over WS
 10. On the client morphdom applies this html diff and the user sees the new message. (handled by LV)
 
@@ -46,20 +48,20 @@ A chat room web app using CQRS and extremly little javascript
 ### DDD  (Domain driven design)
 Domain driven design is about having the code reflect the language you use at work.
 
-The idea is that developers and product/sale people can speak the same language. #halleluja.
-This, naturallly, won't work. Tribe language, has been around forever, and DDD won't change that. But, admidettly, its easier to say SendMessage and refer to the message sending function , than the MessageSendingFactoryClassInterfaceImpl.
+The idea is that developers and product/sale people can speak the same language. #halleluja
+This, naturally, won't work. Tribe language has been around forever, and DDD won't change that. But, admittedly, its easier to say SendMessage and refer to the message sending function, than the MessageSendingFactoryClassInterfaceImpl.
 
-When doing DDD get a bunch og devs and domain experts in a room and define all the business events. 
+When doing DDD get a bunch of domain experts in a room and define all the business events. 
 In the chat app this is just the MessageSent event. Also, discover domain limitations on when this event can occur. E.g. Has the user sent too many messages the last minute? Is it a duplicate event? etc.. In the chat app I just let everything through.
 
 
 ### CQRS
-CQRS is an exceptionally forgettable abbrevation, with the even more bland long name (Command Query Response Segretation).
-It means that you should seperate your write from your reads. In practice it becomes event sourcing with extra steps. 
+CQRS is an exceptionally forgettable abbreviation, with the even more bland long name (Command Query Response Segregation).
+It means that you should separate your writes from your reads. In practice it becomes event sourcing with extra steps. 
 
 First, write types for all the events discovered. In the chat app it looks like this
 ##### lib/events.ex
-```
+```e
 defmodule MessageSent do
     @derive Jason.Encoder
     defstruct  [:sender, :chat_id, :content]
@@ -68,20 +70,20 @@ end
 
 Then do some linguistic flexing and create corresponding commands 
 ##### lib/commands.ex
-```
+```e
 defmodule SendMessage do
     defstruct  [:sender, :chat_id, :content]
 end
 ```
-Now, the domain limitations needs to be validated. In CQRS terminology this is done by the aggregate. 
-The aggregate reads all the events in a stream and builds up a state. Based on this state the command is either rejected or an event is created. Which events should belong to the same stream is in this case rather intuitive. All messages in a single chat is in the same stream. 
+Now, the domain limitations need to be validated. In CQRS terminology this is done by the aggregate. 
+The aggregate reads all the events in a stream and builds up a state. Based on this state the command is either rejected or an event is created. Which events should belong to the same stream is in this case rather intuitive. All messages in a single chat are in the same stream. 
 
 For most CQRS applications all events are read from scratch on each command attempt. In elixir, for reasons I will come back to, in-memory state is trivial and safe, thus the state can just reside in an actor. 
 
 In this example I use a CQRS package called commanded that does this heavy lifting for us. So we can just focus on the logic. 
 
 ##### lib/aggregates.ex
-```
+```e
 defmodule Chat do
     defstruct [chat_id: nil, messages: []]
 
@@ -100,16 +102,16 @@ defmodule Chat do
 end
 ```
 
-As mentioned, CQRS is about splitting the write from the reads. Now we're done with the write side. On the read side we set up eventhandlers. These can be typically oneoff things like sending an SMS or a thing than can be replayed, like building up a Read Model.
+As mentioned, CQRS is about splitting the write from the reads. Now we're done with the write side. On the read side we set up event-handlers. These are either one offs, like sending an SMS, or something that can be replayed, like building up a Read Model.
 
-Here, we only have one event handler. And all it does is building up the states of each Chat. That just means to append the messages in a list. 
+Here, we only have one event handler. All it does is building up the states of each chatroom. That just means to append the messages in a list. 
 
-Now, this state is written to a database. Usually SQL, but I use Mnesia. The reasons are mostly becaus I like things that goes fast. 
+The Read Model state is usually written to a SQL db, but I use Mnesia. The reason is mostly because I like things that goes fast. 
 
 *  It har RAM-copies of state so lookups are fast
-*  Its bulit into Elixir/erlang
+*  It's built into Elixir/erlang, and runs on the BEAM
 
-Also, as Elixir has PubSubs integrated in the runtime I broadcast the event to whoever is listening. I could just as well broadcast the entire state. 
+After a successfull write, I broadcast the new state. As, pubsubs are integrated in the Elixir runtime this is rather simple.
 
 #### lib/event_handlers.ex
 
@@ -120,20 +122,21 @@ defmodule ChatReadModel do
         use Memento.Table, attributes: [:chat_id, :sender,:content],
             type: :bag
     end
+
     use Commanded.Event.Handler,
     application: LiveTea.App,
     name: __MODULE__
 
       def handle(%MessageSent{} = event, _metadata) do
-          :ok = Phoenix.PubSub.broadcast(LiveTea.PubSub, "chat:"<>event.chat_id, event)
           Memento.transaction! fn -> Memento.Query.write(%Model{chat_id: event.chat_id, sender: event.sender,content: event.content}) end
-          :ok
+          Phoenix.PubSub.broadcast(LiveTea.PubSub, "chat:"<> event.chat_id, get(event.chat_id))
       end
 
       def get(chat_id) do
           Memento.transaction! fn -> Memento.Query.select(Model, {:==, :chat_id, chat_id}) end
       end
     end
+
     
 ```
 
@@ -144,7 +147,7 @@ Now, to the bread and butter of this post. This is what I actually want to show.
 
 To get all the terminology straight we'll do as Erlend Loe and make a list
 
-* Erlang, a language made by ericsson in the 90s to handle telecommunications switches.  
+* Erlang, a language made by Ericsson in the 90s to handle telecommunications switches.  
 * BEAM, the runtime erlang runs on.
 * Elixir, a language created in 2011, by Jose Valim, that runs on the BEAM. The syntax is very similar to Ruby making it attractive to a greater (as in larger) community.
 * Phoenix, the most popular web framework for Elixir
@@ -154,11 +157,11 @@ To get all the terminology straight we'll do as Erlend Loe and make a list
 Read more here:  https://dockyard.com/blog/2018/12/12/phoenix-liveview-interactive-real-time-apps-no-need-to-write-javascript
 
 Phoenix liveview enables "server-side-rendered"[^1] single-page web pages . It does this by the power of a brand-new (not really) technology called websockets.
-Liveview sets up a websocket connection between the client and the server. Commands goes from the client, and an updated html is sent back. Morphdom then seemlessly updates the view.
+Liveview sets up a websocket connection between the client and the server. Commands goes from the client, and an updated html is sent back. Morphdom then seamlessly updates the view.
 
-Why isn't this implemented in other backend languages? Well, it's not because a lack of trying.. However websockets are statefull, and most languages have treated state as guy coughing in 2020.
+Why isn't this implemented in other backend languages? Well, it's not because of a lack of trying.. However websockets are stateful, and most languages have treated state as guy coughing in 2020.
 
-In Elixir/Erlang state is trivial. It was made to handle telecom switches at Ericsson. In fact it's an (unintentional) implementation of the actor model. Each websocket is an totally isolated process (actor) that can only communicate with other actors through message passing. I.e. Share by communicating, don't communicate by sharing (I'm looking at you C++).
+In Elixir/Erlang state is trivial. It was made to handle telecom switches at Ericsson. In fact it's an (unintentional) implementation of the actor model. Each websocket is an isolated process (actor) that can only communicate with other actors through message passing. I.e. Share by communicating, don't communicate by sharing (I'm looking at you C++).
 
 
 My chat app (like any other elixir app) starts inn application.ex
@@ -174,15 +177,14 @@ My chat app (like any other elixir app) starts inn application.ex
       ChatReadModel
 
 ```
-Each line is a seperate process that can only communicate with the rest by message passsing.
-Note, the ChatReadmodel mentioned before. This process starts listening on new events and handle these as they come. The phoneix framework starts in the LiveTeaWeb.Endpoint, which is defined in
+Each line in the function spawns an actor. For example the ChatReadmodel mentioned before is spawned here. It starts listening for events and handles these as they come. The phoneix framework starts in the LiveTeaWeb.Endpoint, which is defined in
 lib/live_chat_web/endpoint.ex
 
 This actor listens to http requests and spawns an actor for each, making all requests concurrent. The Endpoint applications handles setting up WS connections and other micmac, usually the file does not have to be edited from what phoenix gives when generating a new app.
 
-At the end of the endpoint file the router is called. And this file must be edited. For the chat app it looks like this 
+At the end of the endpoint.ex the router is called. This file must be edited. For the chat app it looks like this 
 
-```
+```e
 ...
   scope "/", LiveTeaWeb do
     pipe_through :browser
@@ -193,15 +195,14 @@ At the end of the endpoint file the router is called. And this file must be edit
 ...
 ```
 
-This triggers the liveview called PageLive. A liveview must contain at least two functions.
-A  ```mount(params, sessiont, socket)``` and a ```render(assigns)```
-This is the actor that holds the client state in the socket parameter. The render function returns the HTML.
+This triggers the liveview called PageLive. This is the actor that holds the clients state and communicates with it via WS,
 
-
+A liveview must contain at least two functions. 
+A  ```mount(params, sessions, socket)``` and a ```render(assigns)```. mount() is called by the router to spawn the actor and set up the liveview, and the render function returns the HTML.
 
 Whenever the socket is updated, the render function is called anew, and html diffs are sent over the wire. 
 
-Usually, the routing is handled by.. well, the router. But as mentioned before I followed the elm architecture, so I just chucked all that logic into the PageLive module. The reason is that when I first started with MVC I got confused by all the different files, so I spent much time refactoring. TEA was a sweet relief as I could just focus on the logic and as long as I wrote pure functions I could move them later. But tbh. I might have been drinking too much of the cool aid
+Usually, the routing is handled by.. well, the router. But as mentioned before I followed the elm architecture, so I just chucked all that logic into the PageLive module. The reason is that when I first started with MVC I got confused by all the different files, so I spent much time refactoring. TEA was a sweet relief as I could just focus on the logic and as long as I wrote pure functions I could move them later. But tbh. I might have been drinking too much of the kool-aid
 
 The code with comments below show how the LiveVew actor is spawned and how the initial render takes place.
 ```e
@@ -216,7 +217,7 @@ The code with comments below show how the LiveVew actor is spawned and how the i
   end
 
   #This function is called on the initial render, and everytime the url is updated.
-  #Also when its just mutating the window. parameter.
+  #Also when it's just mutating the window. parameter.
   # This is my router.
   def handle_params(%{"path" => path}, _uri, socket) do
       case path do
@@ -238,19 +239,14 @@ The code with comments below show how the LiveVew actor is spawned and how the i
         <%=:chat -> %> <%= chat_page(assigns)%>
         <%=_-> %> <%= home_page(assigns)%>
         <% end %>
-        
-        ....
+      
   """
 end
-      
-      
-  end
-  
+     
   ```
   
  
- Along with the mount and the render, a Liveview usually also have a```handle_event(event,socket)```  to handle clicks from the clients and/or a ```handle_info(event,socket)``` functions to handle messages from other actors. When the user clicks on the "send" button, handle_event() is called which dispathes the SendMessage command to the chatAggregate. 
-After it has gone through the validation process the new state is broadcasted from the readmodel and handle_info() is called. The messages are updated, the render function is called, and the new message is shown to all users on the page. 
+Along with the mount and the render, a Liveview usually also have a```handle_event(event,socket)```  to handle clicks from the clients and/or a ```handle_info(event,socket)``` functions to handle messages from other actors. When the user clicks on the "send" button, handle_event() is called which dispatches the SendMessage command to the chatAggregate. When the read model state is updated and broadcasted handle_info() is called. The messages are updated, the render function is called, and the new message is shown to all users on the page. 
 ```e
 
   #From the form submit
@@ -259,10 +255,9 @@ After it has gone through the validation process the new state is broadcasted fr
      {:noreply, socket}
   end
 
-  @impl true
-  # From the pubsub subscribed to in handle_params
-  def handle_info(%MessageSent{} = event, socket) do
-      new_sock =assign(socket, messages: socket.assigns[:messages] ++ [event]  )
+  #From the pubsub subscribed to in handle params
+  def handle_info(messages, socket) do
+      new_sock =assign(socket, messages: messages)
       {:noreply, push_event(new_sock, "new_message", %{})}
   end
 
@@ -282,8 +277,8 @@ After it has gone through the validation process the new state is broadcasted fr
 
 ```
 
-Hope you found this interesting. I, for one, see this as a ecosystem that can do many things you now split into many different technologies (React, reddis, k8s, "mIcRoServices with LambDas"). There is a reason Whatsapp could serve 320 mill users with only 32 engineers, and my bet is that the reason is Elixir/Erlang. 
+Hope you found this interesting. I, for one, see this as an ecosystem that can do many things you now split into many different technologies (React, reddis, k8s, "mIcRoServices with LambDas"). There is a reason Whatsapp could serve 320 mill users with only 32 engineers, and my bet is that the reason is Elixir/Erlang. 
 
 Bonus: Go go https://livechat.stadler.no/dashboard to see live metrics.  
 
-[^1]: Server-side-initiated is technically more correct, but rendered is what it feels like
+[^1]: Server-side-initiated rendering is technically more correct, but rendered is what it feels like
